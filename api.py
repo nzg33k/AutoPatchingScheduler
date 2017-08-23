@@ -41,7 +41,7 @@ def tag_group_system(client, key, systemid, tagname=id_generator()):
 def schedule_outstanding_errata(client, key, system, date, reboot="Always"):
     "This will schedule an action chain of all outstanding errata for the system"
     chainname = id_generator()
-    errataset = client.system.getRelevantErrata(client, key, system)
+    errataset = client.system.getRelevantErrata(key, system)
     earray = []
     #getRelevantErrata gives us an array of errata (which are arrays of errata details), but addErrataUpdate needs an array of errata ids
     for errata in errataset:

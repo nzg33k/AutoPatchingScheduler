@@ -20,7 +20,8 @@ The values are:
         - IfNeeded - reboot if a reboot is needed, otherwise don't.
           **NOTE** This doesn't work yet as knowing when it is needed is hard.
 
-The only configurable values are PREFIX and STARTDATE
+The only configurable values are in configuration.py.
+You should base configuration.py on configuration.py.template
 '''
 import xmlrpclib
 import datetime
@@ -100,8 +101,8 @@ def set_group_arguments(group, startdate):
     return group
 
 def patch_groups():
-    "Actually schedule the work for matching systems.  Normally STARTDATE should be None."
-    #This file should be based on SatelliteCredentials.py.template
+    "Actually schedule the work for matching systems."
+    #This file should be based on configuration.py.template
     import configuration as conf
     client = xmlrpclib.Server(conf.satellite_url, verbose=0)
     key = client.auth.login(conf.satellite_login, conf.satellite_password)

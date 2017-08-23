@@ -3,7 +3,8 @@ This will schedule autopatching for all systems in groups with names starting wi
 The systems will be tagged and all available errata will be applied.
 The settings are set in RHS, not here.
 
-The schedule will be created for next month and the schedule information will be grabbed from the end of the group description.
+The schedule will be created for next month and the schedule information will be grabbed from RHS.
+Specically the information will be taken from the end of the group description.
 This will be formatted:
 
 ###<DayOfWeek> <Week Of Month> <Time> <RebootPlan>
@@ -11,12 +12,13 @@ This will be formatted:
 The values are:
 ###<0-7> <1-4> <00:00 - 23:59> <Always|IfNeeded|Never>
     - DOW 0 is Sunday
-    - Week Of Month - 1 is the first week.    Values over 4 haven't been tested and will probably work inconsistently, don't do it.
+    - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
     - Time is in 24 hour time
     - RebootPlan
         - Always - reboot everytime we path.
         - Never - do not reboot.
-        - IfNeeded - reboot if a reboot is needed, otherwise don't.    **NOTE** This doesn't work yet as knowing when it is needed is hard.
+        - IfNeeded - reboot if a reboot is needed, otherwise don't.
+          **NOTE** This doesn't work yet as knowing when it is needed is hard.
 
 The only configurable values are PREFIX and STARTDATE
 '''
@@ -38,12 +40,13 @@ def tag_group_system(client, key, systemid, tagname=id_generator()):
     snaplist = client.system.provisioning.snapshot.list_snapshots(key, systemid, {})
     client.system.provisioning.snapshot.addTagToSnapshot(key, snaplist[0].get('id'), tagname)
 
-def schedule_outstanding_errata(client, key, system, date, reboot="Always"):
+def schedule_pending_errata(client, key, system, date, reboot="Always"):
     "This will schedule an action chain of all outstanding errata for the system"
     chainname = id_generator()
     errataset = client.system.getRelevantErrata(key, system)
     earray = []
-    #getRelevantErrata gives us an array of errata (which are arrays of errata details), but addErrataUpdate needs an array of errata ids
+    #getRelevantErrata gives us an array of errata (which are arrays of errata details).
+    #addErrataUpdate needs an array of errata ids
     for errata in errataset:
         earray.extend([int(errata.get('id'))])
     client.actionchain.createChain(key, chainname)
@@ -64,8 +67,9 @@ def get_groups(client, key, prefix, startdate):
     return groups
 
 def find_date(startdate, weekday, weeknumber):
-    "Find the date that is the <weekday> of the <weeknumber> week after <date>.    1=Monday, The first weekday after date is considered weeknumber 1"
-    daysahead = weekday - (startdate.weekday()+1) #The +1 makes this match up with linux times (day 1 = Monday)
+    "Find the date that is the <weekday> of the <weeknumber> week after <date>. (See docs above)."
+    #The +1 makes this match up with linux times (day 1 = Monday)
+    daysahead = weekday - (startdate.weekday()+1)
     if daysahead <= 0:
         #Target day already happened this week
         daysahead += 7
@@ -92,22 +96,24 @@ def set_group_arguments(group, startdate=STARTDATE):
     group['arguments'] = re.sub(r"^(.|\n)*###", "", group.get('description'))
     arguments = re.split(" ", group['arguments'])
     arguments[2] = re.split(":", arguments[2])
-    group['schedule'] = find_date(next_month(startdate).replace(hour=int(arguments[2][0])).replace(minute=int(arguments[2][1])), int(arguments[0]), int(arguments[1]))
+    scheddate = next_month(startdate)
+    scheddate = scheddate.replace(hour=int(arguments[2][0])).replace(minute=int(arguments[2][1]))
+    group['schedule'] = find_date(scheddate, int(arguments[0]), int(arguments[1]))
     group['reboot'] = arguments[3]
     return group
 
 def patch_groups(prefix=PREFIX, startdate=STARTDATE):
-    "Actually schedule the work for matching systems.    You can set startdate to the month before the month you want to schedule for, but normally you just want to schedule for next month so it should be set to None."
+    "Actually schedule the work for matching systems.  Normally STARTDATE should be None."
     #This file should be based on SatelliteCredentials.py.template
-    import SatelliteCredentials
-    client = xmlrpclib.Server(SatelliteCredentials.SATELLITE_URL, verbose=0)
-    key = client.auth.login(SatelliteCredentials.SATELLITE_LOGIN, SatelliteCredentials.SATELLITE_PASSWORD)
+    import SatelliteCredentials as creds
+    client = xmlrpclib.Server(creds.SATELLITE_URL, verbose=0)
+    key = client.auth.login(creds.SATELLITE_LOGIN, creds.SATELLITE_PASSWORD)
     groups = get_groups(client, key, prefix, startdate)
     for group in groups:
         systems = client.systemgroup.listSystemsMinimal(key, group['name'])
         for system in systems:
             tag_group_system(client, key, system['id'])
-            schedule_outstanding_errata(client, key, system['id'], group['schedule'], group['reboot'])
+            schedule_pending_errata(client, key, system['id'], group['schedule'], group['reboot'])
     client.auth.logout(key)
 
 patch_groups(PREFIX, STARTDATE)

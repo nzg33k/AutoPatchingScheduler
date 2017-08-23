@@ -28,11 +28,6 @@ import random
 import string
 import re
 
-#All groups that start with this will be processed
-PREFIX = "APmytestgroup"
-#If you want to schedule for any month other than next, change this
-STARTDATE = None
-
 def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
     "Create a nice random string - we will use this for tagnames and action chain names"
     return ''.join(random.choice(chars) for _ in range(size))
@@ -104,13 +99,13 @@ def set_group_arguments(group, startdate):
     group['reboot'] = "Always" if arguments[3] == "" else arguments[3]
     return group
 
-def patch_groups(prefix, startdate):
+def patch_groups():
     "Actually schedule the work for matching systems.  Normally STARTDATE should be None."
     #This file should be based on SatelliteCredentials.py.template
-    import SatelliteCredentials as creds
-    client = xmlrpclib.Server(creds.SATELLITE_URL, verbose=0)
-    key = client.auth.login(creds.SATELLITE_LOGIN, creds.SATELLITE_PASSWORD)
-    groups = get_groups(client, key, prefix, startdate)
+    import configuration as conf
+    client = xmlrpclib.Server(conf.satellite_url, verbose=0)
+    key = client.auth.login(conf.satellite_login, conf.satellite_password)
+    groups = get_groups(client, key, conf.prefix, conf.startdate)
     for group in groups:
         systems = client.systemgroup.listSystemsMinimal(key, group['name'])
         for system in systems:
@@ -118,4 +113,4 @@ def patch_groups(prefix, startdate):
             schedule_pending_errata(client, key, system['id'], group['schedule'], group['reboot'])
     client.auth.logout(key)
 
-patch_groups(PREFIX, STARTDATE)
+patch_groups()

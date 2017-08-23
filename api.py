@@ -25,28 +25,23 @@ import datetime
 import random
 import string
 import re
-#This file should be based on SatelliteCredentials.py.template
-import SatelliteCredentials
 
 PREFIX = "APmytestgroup" #All groups that start with this will be processed
 STARTDATE = None #If you want to schedule for any month other than next, change this
-
-client = xmlrpclib.Server(SatelliteCredentials.SATELLITE_URL, verbose=0)
-
-key = client.auth.login(SatelliteCredentials.SATELLITE_LOGIN, SatelliteCredentials.SATELLITE_PASSWORD)
 
 def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
     "Create a nice random string - we will use this for tagnames and action chain names"
     return ''.join(random.choice(chars) for _ in range(size))
 
-def tag_group_system(key, systemid, tagname=id_generator()):
+def tag_group_system(client, key, systemid, tagname=id_generator()):
     "This will tag the latest snapshot for a system with the name <tagname>"
     snaplist = client.system.provisioning.snapshot.list_snapshots(key, systemid, {})
     client.system.provisioning.snapshot.addTagToSnapshot(key, snaplist[0].get('id'), tagname)
 
-def schedule_outstanding_errata(key, system, date, reboot="Always", chainname=id_generator()):
+def schedule_outstanding_errata(client, key, system, date, reboot="Always"):
     "This will schedule an action chain of all outstanding errata for the system"
-    errataset = client.system.getRelevantErrata(key, system)
+    chainname = id_generator()
+    errataset = client.system.getRelevantErrata(client, key, system)
     earray = []
     #getRelevantErrata gives us an array of errata (which are arrays of errata details), but addErrataUpdate needs an array of errata ids
     for errata in errataset:
@@ -60,7 +55,7 @@ def schedule_outstanding_errata(key, system, date, reboot="Always", chainname=id
         client.actionchain.addSystemReboot(key, system, chainname)
     client.actionchain.scheduleChain(key, chainname, date)
 
-def get_groups(key=key, prefix=PREFIX, startdate=STARTDATE):
+def get_groups(client, key, prefix, startdate):
     "Get a list of groups with the right prefix"
     groups = client.systemgroup.listAllGroups(key)
     groups = [group for group in groups if group.get('name').startswith(prefix)]
@@ -101,15 +96,18 @@ def set_group_arguments(group, startdate=STARTDATE):
     group['reboot'] = arguments[3]
     return group
 
-def patch_groups(key=key, prefix=PREFIX, startdate=STARTDATE):
+def patch_groups(prefix=PREFIX, startdate=STARTDATE):
     "Actually schedule the work for matching systems.    You can set startdate to the month before the month you want to schedule for, but normally you just want to schedule for next month so it should be set to None."
-    groups = get_groups(key, prefix, startdate)
+    #This file should be based on SatelliteCredentials.py.template
+    import SatelliteCredentials
+    client = xmlrpclib.Server(SatelliteCredentials.SATELLITE_URL, verbose=0)
+    key = client.auth.login(SatelliteCredentials.SATELLITE_LOGIN, SatelliteCredentials.SATELLITE_PASSWORD)
+    groups = get_groups(client, key, prefix, startdate)
     for group in groups:
         systems = client.systemgroup.listSystemsMinimal(key, group['name'])
         for system in systems:
-            tag_group_system(key, system['id'])
-            schedule_outstanding_errata(key, system['id'], group['schedule'], group['reboot'])
+            tag_group_system(client, key, system['id'])
+            schedule_outstanding_errata(client, key, system['id'], group['schedule'], group['reboot'])
+    client.auth.logout(key)
 
-patch_groups(key, PREFIX, STARTDATE)
-
-client.auth.logout(key)
+patch_groups(PREFIX, STARTDATE)

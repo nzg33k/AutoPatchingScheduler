@@ -28,8 +28,10 @@ import random
 import string
 import re
 
-PREFIX = "APmytestgroup" #All groups that start with this will be processed
-STARTDATE = None #If you want to schedule for any month other than next, change this
+#All groups that start with this will be processed
+PREFIX = "APmytestgroup"
+#If you want to schedule for any month other than next, change this
+STARTDATE = None
 
 def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
     "Create a nice random string - we will use this for tagnames and action chain names"
@@ -40,7 +42,7 @@ def tag_group_system(client, key, systemid, tagname=id_generator()):
     snaplist = client.system.provisioning.snapshot.list_snapshots(key, systemid, {})
     client.system.provisioning.snapshot.addTagToSnapshot(key, snaplist[0].get('id'), tagname)
 
-def schedule_pending_errata(client, key, system, date, reboot="Always"):
+def schedule_pending_errata(client, key, system, date, reboot):
     "This will schedule an action chain of all outstanding errata for the system"
     chainname = id_generator()
     errataset = client.system.getRelevantErrata(key, system)
@@ -77,20 +79,20 @@ def find_date(startdate, weekday, weeknumber):
     daysahead += 7*(weeknumber-1)
     return startdate + datetime.timedelta(daysahead)
 
-def next_month(workingdate=None):
+def next_month(startdate):
     "Find the start of the month after <workingdate>"
-    if not workingdate:
-        workingdate = datetime.datetime.now()
-    workingdate = workingdate.replace(day=1)
+    if not startdate:
+        startdate = datetime.datetime.now()
+    startdate = startdate.replace(day=1)
     #If it's December then next month is January next year not month 13 of this year
-    if workingdate.month == 12:
-        workingdate = workingdate.replace(month=1)
-        workingdate = workingdate.replace(year=(workingdate.year+1))
+    if startdate.month == 12:
+        startdate = startdate.replace(month=1)
+        startdate = startdate.replace(year=(startdate.year+1))
     else:
-        workingdate = workingdate.replace(month=(workingdate.month+1))
-    return workingdate
+        startdate = startdate.replace(month=(startdate.month+1))
+    return startdate
 
-def set_group_arguments(group, startdate=STARTDATE):
+def set_group_arguments(group, startdate):
     "Set the date to schedule the work for"
     #We just want the arguments from the end of the description
     group['arguments'] = re.sub(r"^(.|\n)*###", "", group.get('description'))
@@ -99,10 +101,10 @@ def set_group_arguments(group, startdate=STARTDATE):
     scheddate = next_month(startdate)
     scheddate = scheddate.replace(hour=int(arguments[2][0])).replace(minute=int(arguments[2][1]))
     group['schedule'] = find_date(scheddate, int(arguments[0]), int(arguments[1]))
-    group['reboot'] = arguments[3]
+    group['reboot'] = "Always" if arguments[3] == "" else arguments[3]
     return group
 
-def patch_groups(prefix=PREFIX, startdate=STARTDATE):
+def patch_groups(prefix, startdate):
     "Actually schedule the work for matching systems.  Normally STARTDATE should be None."
     #This file should be based on SatelliteCredentials.py.template
     import SatelliteCredentials as creds

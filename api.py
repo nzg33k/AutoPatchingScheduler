@@ -10,10 +10,10 @@ This will be formatted:
 ###<DayOfWeek> <Week Of Month> <Time> <RebootPlan>
 
 The values are:
-###<0-7> <1-4> <00:00 - 23:59> <Always|IfNeeded|Never>
+###<0-7> <1-4> <00:00 - 47:59> <Always|IfNeeded|Never>
     - DOW 0 is Sunday
     - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
-    - Time is in 24 hour time
+    - Time is in 24 hour timei.  Hours over 23 will refer to hour-24 the next day
     - RebootPlan
         - Always - reboot everytime we path.
         - Never - do not reboot.
@@ -95,8 +95,12 @@ def set_group_arguments(group, startdate):
     arguments = re.split(" ", group['arguments'])
     arguments[2] = re.split(":", arguments[2])
     scheddate = next_month(startdate)
+    scheddate = find_date(scheddate, int(arguments[0]), int(arguments[1]))
+    if arguments[2][0] > 23:
+        arguments[2][0] -= 24
+        scheddate = scheddate + datetime.timedelta(days=1)
     scheddate = scheddate.replace(hour=int(arguments[2][0])).replace(minute=int(arguments[2][1]))
-    group['schedule'] = find_date(scheddate, int(arguments[0]), int(arguments[1]))
+    group['schedule'] = scheddate
     group['reboot'] = "Always" if arguments[3] == "" else arguments[3]
     return group
 

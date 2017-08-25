@@ -7,10 +7,10 @@ The schedule will be created for next month and the schedule information will be
 Specically the information will be taken from the end of the group description.
 This will be formatted:
 
-###<DayOfWeek> <Week Of Month> <Time> <RebootPlan>
+###Args:<DayOfWeek> <Week Of Month> <Time> <RebootPlan>
 
 The values are:
-###<0-7> <1-4> <00:00 - 47:59> <Always|IfNeeded|Never>
+###Args:<0-7> <1-4> <00:00 - 47:59> <Always|IfNeeded|Never>
     - DOW 0 is Sunday.
     - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
     - Time is in 24 hour time.  Hours over 23 will refer to hour-24 the next day.
@@ -91,7 +91,7 @@ def next_month(startdate):
 def set_group_arguments(group, startdate):
     "Set the date to schedule the work for"
     #We just want the arguments from the end of the description
-    group['arguments'] = re.sub(r"^(.|\n)*###", "", group.get('description'))
+    group['arguments'] = re.sub(r"^(.|\n)*###Args:", "", group.get('description'))
     arguments = re.split(" ", group['arguments'])
     arguments[2] = re.split(":", arguments[2])
     scheddate = next_month(startdate)

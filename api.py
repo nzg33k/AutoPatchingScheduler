@@ -96,6 +96,8 @@ def set_group_arguments(group, startdate):
     arguments[2] = re.split(":", arguments[2])
     scheddate = next_month(startdate)
     scheddate = find_date(scheddate, int(arguments[0]), int(arguments[1]))
+    arguments[2][0] = int(arguments[2][0])
+    arguments[2][1] = int(arguments[2][1])
     if arguments[2][0] > 23:
         arguments[2][0] -= 24
         scheddate = scheddate + datetime.timedelta(days=1)

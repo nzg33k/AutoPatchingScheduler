@@ -11,12 +11,12 @@ We depend on the prefix being set and the matching group descriptions ending in 
 
 The values are:
 
-    ###<0-7> <1-4> <00:00 - 23:59> <Always|IfNeeded|Never>
+    ###<0-7> <1-4> <00:00 - 47:59> <Always|IfNeeded|Never>
     
-   - DOW 0 is Sunday
+   - DOW 0 is Sunday.
    - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
-   - Time is in 24 hour time
-   - RebootPlan
+   - Time is in 24 hour time.  Hours over 23 will refer to hour-24 the next day.
+   - RebootPlan:
         - 'Always' - reboot everytime we patch.
         - 'Never' - do not reboot.
         - 'IfNeeded' - reboot if a reboot is needed, otherwise don't.

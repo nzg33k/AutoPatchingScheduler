@@ -33,14 +33,15 @@ def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
     "Create a nice random string - we will use this for tagnames and action chain names"
     return ''.join(random.choice(chars) for _ in range(size))
 
-def tag_group_system(client, key, systemid, tagname=id_generator()):
+def tag_group_system(client, key, systemid, tagname=""):
     "This will tag the latest snapshot for a system with the name <tagname>"
+    tagname += datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
     snaplist = client.system.provisioning.snapshot.list_snapshots(key, systemid, {})
     client.system.provisioning.snapshot.addTagToSnapshot(key, snaplist[0].get('id'), tagname)
 
 def schedule_pending_errata(client, key, system, date, reboot):
     "This will schedule an action chain of all outstanding errata for the system"
-    chainname = id_generator()
+    chainname = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f") + system
     errataset = client.system.getRelevantErrata(key, system)
     if errataset:
         earray = []

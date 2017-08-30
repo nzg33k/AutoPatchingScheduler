@@ -41,7 +41,7 @@ def tag_group_system(client, key, systemid, tagname=""):
 
 def schedule_pending_errata(client, key, system, date, reboot):
     "This will schedule an action chain of all outstanding errata for the system"
-    chainname = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f") + system
+    chainname = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f") + str(system)
     errataset = client.system.getRelevantErrata(key, system)
     if errataset:
         earray = []

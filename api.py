@@ -42,19 +42,20 @@ def schedule_pending_errata(client, key, system, date, reboot):
     "This will schedule an action chain of all outstanding errata for the system"
     chainname = id_generator()
     errataset = client.system.getRelevantErrata(key, system)
-    earray = []
-    #getRelevantErrata gives us an array of errata (which are arrays of errata details).
-    #addErrataUpdate needs an array of errata ids
-    for errata in errataset:
-        earray.extend([int(errata.get('id'))])
-    client.actionchain.createChain(key, chainname)
-    client.actionchain.addErrataUpdate(key, system, earray, chainname)
-    if reboot == "Always":
-        client.actionchain.addSystemReboot(key, system, chainname)
-    elif reboot == "IfNeeded":
-        #Maybe one day we'll have more smarts in here, till then a reboot is always required
-        client.actionchain.addSystemReboot(key, system, chainname)
-    client.actionchain.scheduleChain(key, chainname, date)
+    if errataset:
+        earray = []
+        #getRelevantErrata gives us an array of errata (which are arrays of errata details).
+        #addErrataUpdate needs an array of errata ids
+        for errata in errataset:
+            earray.extend([int(errata.get('id'))])
+        client.actionchain.createChain(key, chainname)
+        client.actionchain.addErrataUpdate(key, system, earray, chainname)
+        if reboot == "Always":
+            client.actionchain.addSystemReboot(key, system, chainname)
+        elif reboot == "IfNeeded":
+            #Maybe one day we'll have more smarts in here, till then a reboot is always required
+            client.actionchain.addSystemReboot(key, system, chainname)
+        client.actionchain.scheduleChain(key, chainname, date)
 
 def get_groups(client, key, prefix, startdate):
     "Get a list of groups with the right prefix"

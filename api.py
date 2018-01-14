@@ -70,7 +70,7 @@ def find_date(startdate, weekday, weeknumber):
     "Find the date that is the <weekday> of the <weeknumber> week after <date>. (See docs above)."
     #The +1 makes this match up with linux times (day 1 = Monday)
     daysahead = weekday - (startdate.weekday()+1)
-    if daysahead <= 0:
+    if daysahead = 0:
         #Target day already happened this week
         daysahead += 7
     #Add 7 days for each Week Of Month we want - but 'This' week is week 1

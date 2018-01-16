@@ -23,4 +23,4 @@ The values are:
            **NOTE** This doesn't work yet as knowing when it is needed is hard.
 
 
-http://spacewalk.redhat.com/documentation/api/2.6/index.html has a good API overview which helped a lot in writing this.
+https://spacewalkproject.github.io/documentation/api/2.7/ has a good API overview which helped a lot in writing this.

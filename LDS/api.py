@@ -70,7 +70,8 @@ def process_list(listfile=conf.listfile):
             #print schedule
             upgrade_by_tag(row[0], schedule)
             #We do not know when patching will be finished so this is not a good idea.
-            #I have asked canonical for suggestions but I will leave this commented out to play with later.
+            #I have asked canonical for suggestions.
+            #I will leave this commented out to play with later.
             #reboot_by_tag(row[0], schedule)
 
 process_list()

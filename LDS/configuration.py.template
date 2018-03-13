@@ -1,0 +1,13 @@
+'''
+This sets the credentials and such for your server
+'''
+
+#All groups that start with this will be processed
+prefix = "AP"
+#If you want to schedule for any month other than next, change this
+startdate = None
+uri = "http://localhost/rpc/api"
+key = ""
+secret = ""
+ca = None
+listfile = "list.csv"

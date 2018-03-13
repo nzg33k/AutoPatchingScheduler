@@ -17,3 +17,4 @@ The values are:
    - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
    - Time is in 24 hour time.  Hours over 23 will refer to hour-24 the next day.
    
+https://landscape.canonical.com/static/doc/api/

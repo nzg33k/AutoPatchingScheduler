@@ -2,12 +2,13 @@
 This sets the credentials and such for your server
 '''
 
-#All groups that start with this will be processed
-prefix = "AP"
 #If you want to schedule for any month other than next, change this
 startdate = None
+#The listfile is assumed to be in this directory and called list.csv.
+#You could call it something else if you want.  
+#It should be based on list.csv.template.
+listfile = "list.csv"
 uri = "http://localhost/rpc/api"
 key = ""
 secret = ""
 ca = None
-listfile = "list.csv"

@@ -1,11 +1,27 @@
 '''
 This will autopatch machines using landscape
+
+Todo:
+  Look at ways to make systems patched at different times get the same packages.
+  Manage reboots - canonical suggest polling for the need reboot flag (yuck)
+
+The configuration.py file should be a copy of configuration.py.template
+The copy should have the details (key, secret etc) filled in.
+
+The CSV file should be based on the template too, and should be formatted:
+  <tag name>,<DayOfWeek>,<Week Of Month>,<Time>
+  <String>,<0-7>,<1-4>,<00:00 - 47:59>
+  - tag name should match a tag in landscape.
+  - DOW 0 is Sunday.
+  - Week Of Month - 1 is the first week. Values over 4 haven't been tested.
+  - Time is in 24 hour time. Hours over 23 will refer to hour-24 the next day.
+
 '''
-#This file should be based on configuration.py.template
 import csv
 import re
 import datetime
 from landscape_api.base import API as landscape_api
+#This file should be based on configuration.py.template
 import configuration as conf
 
 def get_computers_by_tag(tag):
@@ -67,12 +83,7 @@ def process_list(listfile=conf.listfile):
         filereader = csv.reader(csvfile)
         for row in filereader:
             schedule = interpret_time(row)
-            #print schedule
             upgrade_by_tag(row[0], schedule)
-            #We do not know when patching will be finished so this is not a good idea.
-            #I have asked canonical for suggestions.
-            #I will leave this commented out to play with later.
             #reboot_by_tag(row[0], schedule)
 
 process_list()
-#upgrade_by_tag("testapsw", "2018-03-13T13:30:00Z")

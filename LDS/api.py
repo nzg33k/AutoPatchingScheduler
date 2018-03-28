@@ -20,6 +20,7 @@ The CSV file should be based on the template too, and should be formatted:
 import csv
 import re
 import datetime
+import dateutil.relativedelta as relativedelta
 from landscape_api.base import API as landscape_api
 #This file should be based on configuration.py.template
 import configuration as conf
@@ -75,7 +76,11 @@ def interpret_time(list_item, startdate=conf.startdate):
 def reboot_by_tag(tag, schedule):
     "Reboot computers with this tag on this schedule"
     api = landscape_api(conf.uri, conf.key, conf.secret, conf.ca)
-    api.reboot_computers(get_computers_by_tag(tag), schedule) # pylint: disable=no-member
+    computerlist = get_computers_by_tag(tag)
+    computers = []
+    for computer in computerlist:
+	computers.append(int(computer["id"]))
+    api.reboot_computers(computers, schedule) # pylint: disable=no-member
 
 def process_list(listfile=conf.listfile):
     "Process the list of tags and schedules"
@@ -83,7 +88,8 @@ def process_list(listfile=conf.listfile):
         filereader = csv.reader(csvfile)
         for row in filereader:
             schedule = interpret_time(row)
+            rebootschedule = schedule + relativedelta.relativedelta(hours=2)
             upgrade_by_tag(row[0], schedule)
-            #reboot_by_tag(row[0], schedule)
+            reboot_by_tag(row[0], rebootschedule)
 
 process_list()

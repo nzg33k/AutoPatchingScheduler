@@ -76,6 +76,4 @@ def get_computer_names():
     names += get_googlesheet_computer_names()
     return list(set(names))
 
-RESULTS = get_computer_names()
-print RESULTS
-print len(RESULTS)
+print get_computer_names()

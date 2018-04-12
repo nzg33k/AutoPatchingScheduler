@@ -3,12 +3,17 @@ This sets the credentials and such for your server
 '''
 
 #LDS
-uri = "http://localhost/rpc/api"
-key = ""
-secret = ""
-ca = None
+URI = "http://localhost/rpc/api"
+KEY = ""
+SECRET = ""
+CA = None
 
 #RHS5
-satellite_url = "http://localhost/rpc/api"
-satellite_login = "scriptuser"
-satellite_password = ""
+SATELLITE_URL = "http://localhost/rpc/api"
+SATELLITE_LOGIN = "scriptuser"
+SATELLITE_PASSWORD = ""
+
+#weburl
+WEBLISTURL = []
+
+DISABLEPROXY = False

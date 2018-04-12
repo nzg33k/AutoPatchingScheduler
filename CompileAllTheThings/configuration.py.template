@@ -17,3 +17,8 @@ SATELLITE_PASSWORD = ""
 WEBLISTURL = []
 
 DISABLEPROXY = False
+
+GSHEETS = [
+    {"id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms", "range": "Class Data!A2:E"}
+]
+

@@ -68,12 +68,50 @@ def get_googlesheet_computer_names():
                 computernames.append(row[0].encode("utf-8").rstrip().lower())
     return computernames
 
+def output_to_gsheet(data):
+    "Output data to a google sheet"
+    #https://developers.google.com/sheets/api/quickstart/python
+    from googleapiclient.discovery import build
+    from httplib2 import Http
+    from oauth2client import file as gfile, client, tools
+    #Setup the Sheets API
+    store = gfile.Storage('credentials.json')
+    creds = store.get()
+    ordereddata = []
+    for line in data:
+        ordereddata.append([line])
+    if not creds or creds.invalid:
+        flow = client.flow_from_clientsecrets(
+            'client_secret.json',
+            'https://www.googleapis.com/auth/spreadsheets'
+        )
+        creds = tools.run_flow(flow, store)
+    service = build('sheets', 'v4', http=creds.authorize(Http()))
+    resource = service.spreadsheets().values()  # pylint: disable=no-member
+    #Clear the destination range
+    result = resource.clear(
+        spreadsheetId=conf.OUTPUTSHEET['id'],
+        range=conf.OUTPUTSHEET['range'],
+        body={}
+    )
+    result = result.execute()
+    #Populate the destination range
+    result = resource.update(
+        spreadsheetId=conf.OUTPUTSHEET['id'],
+        range=conf.OUTPUTSHEET['range'],
+        valueInputOption='RAW',
+        body={
+            "values": ordereddata
+        }
+    )
+    result = result.execute()
+
 def get_computer_names():
     "Get the names of the computers"
     names = get_lds_computer_names()
     names += get_rhs5_computer_names()
     names += get_web_computer_names()
     names += get_googlesheet_computer_names()
-    return list(set(names))
+    return list(sorted(set(names)))
 
-print get_computer_names()
+output_to_gsheet(get_computer_names())

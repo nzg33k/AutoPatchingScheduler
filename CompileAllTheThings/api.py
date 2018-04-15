@@ -14,7 +14,11 @@ def get_lds_computer_names():
     computers = landscape_api(conf.URI, conf.KEY, conf.SECRET, conf.CA).get_computers() # pylint: disable=no-member
     computernames = []
     for computer in computers:
-        computernames.append([computer["hostname"].encode("utf-8").rstrip().lower(), 'lds'])
+        computernames.append([
+            computer["hostname"].encode("utf-8").rstrip().lower(),
+            'lds',
+            ''.join(computer["tags"]).encode("utf-8").rstrip().lower()
+        ])
     return computernames
 
 def get_rhs5_computer_names():
@@ -26,7 +30,17 @@ def get_rhs5_computer_names():
     computers = client.system.listSystems(key)
     computernames = []
     for computer in computers:
-        computernames.append([computer["name"].encode("utf-8").rstrip().lower(), 'rhs5'])
+        groups = client.system.listGroups(key, computer['id'])
+        groupnames = ""
+        for group in groups:
+            if group['subscribed'] == 1:
+                if group['system_group_name'].lower().startswith(conf.PREFIX):
+                    groupnames += group['system_group_name'] + " "
+        computernames.append([
+            computer["name"].encode("utf-8").rstrip().lower(),
+            'rhs5',
+            groupnames
+        ])
     return computernames
 
 def get_web_computer_names():
@@ -39,7 +53,7 @@ def get_web_computer_names():
     for weburl in conf.WEBLISTURL:
         computers = urllib2.urlopen(weburl['link'])
         for computer in computers:
-            computernames.append([computer.encode("utf-8").rstrip().lower(), weburl['name']])
+            computernames.append([computer.encode("utf-8").rstrip().lower(), weburl['name'], ""])
     return computernames
 
 def get_googlesheet_computer_names():
@@ -65,7 +79,7 @@ def get_googlesheet_computer_names():
         values = result.get('values', [])
         if values:
             for row in values:
-                computernames.append([row[0].encode("utf-8").rstrip().lower(), gsheet['name'], ])
+                computernames.append([row[0].encode("utf-8").rstrip().lower(), gsheet['name'], ""])
     return computernames
 
 def output_to_gsheet(data):
@@ -118,8 +132,9 @@ def get_computer_names():
         if index > 0:
             if names[index-1][0] == name[0]:
                 names[index][1] += " " + names[index - 1][1]
+                names[index][2] += " " + names[index - 1][2]
                 #If I delete them now it messes up this loop.  Empty the record instead.
-                names[index - 1] = ["", ""]
+                names[index - 1] = ["", "", ""]
     #Delete the empty lines
     names = [x for x in names if x[0] != ""]
     return list(names)

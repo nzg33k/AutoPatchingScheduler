@@ -21,7 +21,7 @@ def get_lds_computer_names():
         computernames.append([
             computer["hostname"].encode("utf-8").rstrip().lower(),
             'lds',
-            taglist.encode("utf-8").rstrip().lower()
+            taglist.encode("utf-8").rstrip()
         ])
     return computernames
 

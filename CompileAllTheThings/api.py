@@ -14,10 +14,14 @@ def get_lds_computer_names():
     computers = landscape_api(conf.URI, conf.KEY, conf.SECRET, conf.CA).get_computers() # pylint: disable=no-member
     computernames = []
     for computer in computers:
+        taglist = ""
+        for tag in computer["tags"]:
+            if tag.lower().startswith(conf.PREFIX):
+                taglist += tag + " "
         computernames.append([
             computer["hostname"].encode("utf-8").rstrip().lower(),
             'lds',
-            ''.join(computer["tags"]).encode("utf-8").rstrip().lower()
+            taglist.encode("utf-8").rstrip().lower()
         ])
     return computernames
 

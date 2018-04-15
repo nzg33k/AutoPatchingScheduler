@@ -136,7 +136,9 @@ def get_computer_names():
         if index > 0:
             if names[index-1][0] == name[0]:
                 names[index][1] += " " + names[index - 1][1]
-                names[index][2] += " " + names[index - 1][2]
+                if names[index][2] != "":
+                    names[index][2] += " "
+                names[index][2] += names[index - 1][2]
                 #If I delete them now it messes up this loop.  Empty the record instead.
                 names[index - 1] = ["", "", ""]
     #Delete the empty lines

@@ -14,12 +14,14 @@ SATELLITE_LOGIN = "scriptuser"
 SATELLITE_PASSWORD = ""
 
 #weburl
-WEBLISTURL = []
+WEBLISTURL = [
+    {"link": "https://url", "name": "websourcename"},
+]
 
 DISABLEPROXY = False
 
 GSHEETS = [
-    {"id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms", "range": "Class Data!A2:E"}
+    {"id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms", "range": "Class Data!A2:E", "name": "gsheetname"}
 ]
 
 OUTPUTSHEET = {"id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms", "range": "Class Data!A2:E"}

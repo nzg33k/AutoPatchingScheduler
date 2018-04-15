@@ -14,7 +14,7 @@ def get_lds_computer_names():
     computers = landscape_api(conf.URI, conf.KEY, conf.SECRET, conf.CA).get_computers() # pylint: disable=no-member
     computernames = []
     for computer in computers:
-        computernames.append(computer["hostname"].encode("utf-8").rstrip().lower())
+        computernames.append([computer["hostname"].encode("utf-8").rstrip().lower(), 'lds'])
     return computernames
 
 def get_rhs5_computer_names():
@@ -26,7 +26,7 @@ def get_rhs5_computer_names():
     computers = client.system.listSystems(key)
     computernames = []
     for computer in computers:
-        computernames.append(computer["name"].encode("utf-8").rstrip().lower())
+        computernames.append([computer["name"].encode("utf-8").rstrip().lower(), 'rhs5'])
     return computernames
 
 def get_web_computer_names():
@@ -37,9 +37,9 @@ def get_web_computer_names():
         urllib2.getproxies = lambda: {}
     computernames = []
     for weburl in conf.WEBLISTURL:
-        computers = urllib2.urlopen(weburl)
+        computers = urllib2.urlopen(weburl['link'])
         for computer in computers:
-            computernames.append(computer.encode("utf-8").rstrip().lower())
+            computernames.append([computer.encode("utf-8").rstrip().lower(), weburl['name']])
     return computernames
 
 def get_googlesheet_computer_names():
@@ -65,7 +65,7 @@ def get_googlesheet_computer_names():
         values = result.get('values', [])
         if values:
             for row in values:
-                computernames.append(row[0].encode("utf-8").rstrip().lower())
+                computernames.append([row[0].encode("utf-8").rstrip().lower(), gsheet['name'], ])
     return computernames
 
 def output_to_gsheet(data):
@@ -79,7 +79,7 @@ def output_to_gsheet(data):
     creds = store.get()
     ordereddata = []
     for line in data:
-        ordereddata.append([line])
+        ordereddata.append(line)
     if not creds or creds.invalid:
         flow = client.flow_from_clientsecrets(
             'client_secret.json',
@@ -112,6 +112,16 @@ def get_computer_names():
     names += get_rhs5_computer_names()
     names += get_web_computer_names()
     names += get_googlesheet_computer_names()
-    return list(sorted(set(names)))
+    names = sorted(names, key=lambda x: x[0])
+    #One line per host, space separate sources
+    for index, name in enumerate(names):
+        if index > 0:
+            if names[index-1][0] == name[0]:
+                names[index][1] += " " + names[index - 1][1]
+                #If I delete them now it messes up this loop.  Empty the record instead.
+                names[index - 1] = ["", ""]
+    #Delete the empty lines
+    names = [x for x in names if x[0] != ""]
+    return list(names)
 
 output_to_gsheet(get_computer_names())

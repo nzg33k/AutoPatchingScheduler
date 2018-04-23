@@ -26,4 +26,6 @@ GSHEETS = [
 
 OUTPUTSHEET = {"id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms", "range": "Class Data!A2:E"}
 
+OUTPUTCSV = "allthethings.csv"
+
 PREFIX = "ap"

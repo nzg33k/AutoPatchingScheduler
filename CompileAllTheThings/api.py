@@ -124,6 +124,13 @@ def output_to_gsheet(data):
     )
     result = result.execute()
 
+def output_to_csv(data):
+    "Output data to a csv"
+    import csv
+    with open(conf.OUTPUTCSV, 'wb') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerows(data)
+
 def get_computer_names():
     "Get the names of the computers"
     names = get_lds_computer_names()
@@ -145,4 +152,7 @@ def get_computer_names():
     names = [x for x in names if x[0] != ""]
     return list(names)
 
-output_to_gsheet(get_computer_names())
+#output_to_gsheet(get_computer_names())
+output=get_computer_names()
+output_to_gsheet(output)
+output_to_csv(output)

@@ -15,3 +15,6 @@ This is my attempt to put a bunch of data in one place.
     - pushd /usr/lib/python2.7/site-packages/
     - ln -s ../dist-packages/landscape_api .
     - popd
+
+### Installing the google api client
+easy_install --upgrade google-api-python-client

@@ -87,9 +87,10 @@ def process_list(listfile=conf.listfile):
     with open(listfile) as csvfile:
         filereader = csv.reader(csvfile)
         for row in filereader:
-            schedule = interpret_time(row)
-            rebootschedule = schedule + relativedelta.relativedelta(hours=2)
-            upgrade_by_tag(row[0], schedule)
-            reboot_by_tag(row[0], rebootschedule)
+            if get_computers_by_tag(row[0]) <> []:
+                schedule = interpret_time(row)
+                rebootschedule = schedule + relativedelta.relativedelta(hours=2)
+                upgrade_by_tag(row[0], schedule)
+                reboot_by_tag(row[0], rebootschedule)
 
 process_list()

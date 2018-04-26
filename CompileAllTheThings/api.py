@@ -39,7 +39,7 @@ def get_rhs5_computer_names():
         groupnames = ""
         for group in groups:
             if group['subscribed'] == 1:
-                if group['system_group_name'].lower().startswith(conf.PREFIX):
+                if group['system_group_name'].lower().startswith(conf.PREFIX.lower()):
                     groupnames += group['system_group_name'] + " "
         computernames.append([
             computer["name"].encode("utf-8").rstrip().lower(),

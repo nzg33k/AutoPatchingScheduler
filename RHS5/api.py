@@ -112,9 +112,9 @@ def patch_groups():
     "Actually schedule the work for matching systems."
     #This file should be based on configuration.py.template
     import configuration as conf
-    client = xmlrpclib.Server(conf.satellite_url, verbose=0)
-    key = client.auth.login(conf.satellite_login, conf.satellite_password)
-    groups = get_groups(client, key, conf.prefix, conf.startdate)
+    client = xmlrpclib.Server(conf.SATELLITE_URL, verbose=0)
+    key = client.auth.login(conf.SATELLITE_LOGIN, conf.SATELLITE_PASSWORD)
+    groups = get_groups(client, key, conf.PREFIX, conf.STARTDATE)
     for group in groups:
         systems = client.systemgroup.listSystemsMinimal(key, group['name'])
         for system in systems:

@@ -27,7 +27,7 @@ import configuration as conf
 
 def get_computers_by_tag(tag):
     "Get the computers with a specific tag"
-    api = landscape_api(conf.uri, conf.key, conf.secret, conf.ca)
+    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     computers = api.get_computers(query="tag:"+tag) # pylint: disable=no-member
     return computers
 
@@ -35,12 +35,12 @@ def upgrade_by_tag(tag, deliver_after, packages=None, security_only=False, deliv
     "Upgrade all systems with the given tag"
     if packages is None:
         packages = []
-    api = landscape_api(conf.uri, conf.key, conf.secret, conf.ca)
+    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     tag = "tag:"+tag
     result = api.upgrade_packages(tag, packages, security_only, deliver_after, deliver_delay_window) # pylint: disable=no-member
     return result
 
-def interpret_time(list_item, startdate=conf.startdate):
+def interpret_time(list_item, startdate=conf.STARTDATE):
     "Take the data we get from the CSV and turn it into a real date"
     weekday = int(list_item[1])
     weeknumber = int(list_item[2])
@@ -75,14 +75,14 @@ def interpret_time(list_item, startdate=conf.startdate):
 
 def reboot_by_tag(tag, schedule):
     "Reboot computers with this tag on this schedule"
-    api = landscape_api(conf.uri, conf.key, conf.secret, conf.ca)
+    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     computerlist = get_computers_by_tag(tag)
     computers = []
     for computer in computerlist:
-	computers.append(int(computer["id"]))
+        computers.append(int(computer["id"]))
     api.reboot_computers(computers, schedule) # pylint: disable=no-member
 
-def process_list(listfile=conf.listfile):
+def process_list(listfile=conf.LISTFILE):
     "Process the list of tags and schedules"
     with open(listfile) as csvfile:
         filereader = csv.reader(csvfile)

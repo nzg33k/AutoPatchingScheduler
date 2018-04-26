@@ -17,7 +17,7 @@ def get_lds_computer_names():
     for computer in computers:
         taglist = ""
         for tag in computer["tags"]:
-            if tag.lower().startswith(conf.PREFIX):
+            if tag.lower().startswith(conf.PREFIX.lower()):
                 taglist += tag + " "
         computernames.append([
             computer["hostname"].encode("utf-8").rstrip().lower(),

@@ -47,8 +47,10 @@ def connect_cis():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     session.verify = False
     # Create a connection for the session.
-    vapi_url = 'https://' + config.VM_HOSTNAME + '/api'
-    connector = get_requests_connector(session=session, url=vapi_url)
+    connector = get_requests_connector(
+        session=session,
+        url='https://' + config.VM_HOSTNAME + '/api'
+    )
     # Add username/password security context to the connector.
     connector.set_security_context(
         create_user_password_security_context(
@@ -74,7 +76,6 @@ def get_details(allnames, filename='serverlist.yaml'):
     from com.vmware.vcenter_client import VM
     from com.vmware.cis.tagging_client import TagAssociation
     from com.vmware.vapi import std_client
-    my_stub_config = connect_cis()
     vsphere_client = connect_vsphere()
     names_chunks = chunks(allnames, 100)
     results = []
@@ -87,7 +88,7 @@ def get_details(allnames, filename='serverlist.yaml'):
             sys.stdout.write('.')
             sys.stdout.flush()
             result = {}
-            taglist = TagAssociation(my_stub_config)
+            taglist = TagAssociation(connect_cis())
             taglist = taglist.list_attached_tags(
                 std_client.DynamicID(type="VirtualMachine", id=vmserver.vm)
             )
@@ -107,7 +108,7 @@ def write_dict_to_file(mydict, filename):
 
 def read_dicts_from_file(filename):
     "Reads a dict from file"
-    import ruamel.yaml as yaml
+    import yaml
     myfile = open(filename)
     results = []
     with myfile as infile:
@@ -162,9 +163,9 @@ def get_names(filename='servers.list'):
 
 def main():
     "This is what I'm doing during dev"
-    get_details(get_names('servers.list'), 'serverlist.yaml')
-    print assemble_details('serverlist.yaml')
-    #get_details(get_names('serverstmp.list'), 'serverlisttmp.yaml')
-    #print assemble_details('serverlisttmp.yaml')
+    #get_details(get_names('servers.list'), 'serverlist.yaml')
+    #print assemble_details('serverlist.yaml')
+    get_details(get_names('serverstmp.list'), 'serverlisttmp.yaml')
+    print assemble_details('serverlisttmp.yaml')
 
 main()

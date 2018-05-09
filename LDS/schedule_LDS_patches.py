@@ -21,14 +21,14 @@ import csv
 import re
 import datetime
 import dateutil.relativedelta as relativedelta
-from landscape_api.base import API as landscape_api
+from landscape_api.base import API as LANDSCAPE_API
 # This file should be based on configuration.py.template
 import configuration as conf
 
 
 def get_computers_by_tag(tag):
     """Get the computers with a specific tag"""
-    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
+    api = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     computers = api.get_computers(query="tag:" + tag)  # pylint: disable=no-member
     return computers
 
@@ -37,7 +37,7 @@ def upgrade_by_tag(tag, deliver_after, packages=None, security_only=False, deliv
     """Upgrade all systems with the given tag"""
     if packages is None:
         packages = []
-    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
+    api = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     tag = "tag:" + tag
     result = api.upgrade_packages(tag, packages, security_only, deliver_after,
                                   deliver_delay_window)  # pylint: disable=no-member
@@ -80,7 +80,7 @@ def interpret_time(list_item, startdate=conf.STARTDATE):
 
 def reboot_by_tag(tag, schedule):
     """Reboot computers with this tag on this schedule"""
-    api = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
+    api = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     computerlist = get_computers_by_tag(tag)
     computers = []
     for computer in computerlist:

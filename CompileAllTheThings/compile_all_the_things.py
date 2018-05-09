@@ -11,8 +11,8 @@ import configuration as conf
 def get_lds_computer_names():
     """Get all the computers in LDS"""
     # https://landscape.canonical.com/static/doc/api/
-    from landscape_api.base import API as landscape_api
-    computers = landscape_api(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
+    from landscape_api.base import API as LANDSCAPE_API
+    computers = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     computers = computers.get_computers()  # pylint: disable=no-member
     computernames = []
     for computer in computers:

@@ -15,7 +15,7 @@ The values are:
     - Week Of Month - 1 is the first week.    Values over 4 haven't been tested.
     - Time is in 24 hour time.  Hours over 23 will refer to hour-24 the next day.
     - RebootPlan:
-        - Always - reboot everytime we path.
+        - Always - reboot everytime we patch.
         - Never - do not reboot.
         - IfNeeded - reboot if a reboot is needed, otherwise don't.
           **NOTE** This doesn't work yet as knowing when it is needed is hard.

@@ -19,7 +19,7 @@ def find_sys_with_package(sought_package):
             for system in installed:
                 all_installed.add(system)
     for system in all_installed:
-       hits.append(api.get_computers(query="id:" + str(system))[0]['hostname'].encode("utf-8"))
+        hits.append(api.get_computers(query="id:" + str(system))[0]['hostname'].encode("utf-8"))
     return hits
 
 

@@ -8,7 +8,6 @@ def find_sys_with_package(sought_package):
     from landscape_api.base import API as LANDSCAPE_API
     # This file should be based on configuration.py.template
     import configuration as conf
-    import pycurl
     api = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
     packages = api.get_packages(query="NOT tag:testapsw", names=sought_package)
     all_installed = set()

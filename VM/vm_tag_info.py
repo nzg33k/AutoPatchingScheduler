@@ -1,9 +1,11 @@
-'''
+"""
 More VMWare play
-'''
+"""
 
+
+# Require pyyaml and the Vsphere sdk
 def chunks(mylist, max_length):
-    "Break mylist into pieces no bigger than max_length"
+    """Break mylist into pieces no bigger than max_length"""
     result = []
     for i in range(0, len(mylist), max_length):
         working_length = i + max_length
@@ -12,8 +14,9 @@ def chunks(mylist, max_length):
         result.append(mylist[i:working_length])
     return result
 
+
 def connect_vsphere():
-    "Connect to Vsphere"
+    """Connect to Vsphere"""
     import configuration as config
     import requests
     import urllib3
@@ -31,8 +34,9 @@ def connect_vsphere():
     )
     return vsphere_client
 
+
 def connect_cis():
-    "Connect to CIS"
+    """Connect to CIS"""
     import configuration as config
     import requests
     import urllib3
@@ -70,8 +74,9 @@ def connect_cis():
     my_stub_config.connector.set_security_context(session_id_context)
     return my_stub_config
 
+
 def get_details(allnames, filename='serverlist.yaml'):
-    "Get the details"
+    """Get the details"""
     import sys
     from com.vmware.vcenter_client import VM
     from com.vmware.cis.tagging_client import TagAssociation
@@ -99,15 +104,17 @@ def get_details(allnames, filename='serverlist.yaml'):
             results.append(result)
     return results
 
+
 def write_dict_to_file(mydict, filename):
-    "Writes a dict to file"
+    """Writes a dict to file"""
     import json
     myfile = open(filename, 'a')
     json.dump(mydict, myfile)
     myfile.write("\n")
 
+
 def read_dicts_from_file(filename):
-    "Reads a dict from file"
+    """Reads a dict from file"""
     import yaml
     myfile = open(filename)
     results = []
@@ -116,8 +123,9 @@ def read_dicts_from_file(filename):
             results.append(yaml.safe_load(line))
     return results
 
+
 def get_unique_tags(results):
-    "Get the tag details"
+    """Get the tag details"""
     unique_tags = set()
     for server in results:
         for taglist in server:
@@ -125,8 +133,9 @@ def get_unique_tags(results):
                 unique_tags.add(tag)
     return unique_tags
 
+
 def get_tag_details(unique_tags, connectcis=connect_cis()):
-    "Get the details for each unique tag"
+    """Get the details for each unique tag"""
     from com.vmware.cis.tagging_client import Tag, Category
     result = {}
     for tagid in unique_tags:
@@ -135,11 +144,12 @@ def get_tag_details(unique_tags, connectcis=connect_cis()):
         catname = Category(connectcis).get(tagdetails.category_id).name
         result[tagid]['name'] = tagdetails.name
         result[tagid]['cat'] = catname
-        #servertags += str(catname)+":"+str(tagdetails.name)+";"
+        # servertags += str(catname)+":"+str(tagdetails.name)+";"
     return result
 
+
 def inject_tags_to_details(details, tagdetails):
-    "Patch up the details with the full tag info"
+    """Patch up the details with the full tag info"""
     result = {}
     for server in details:
         for taglist in server:
@@ -148,24 +158,28 @@ def inject_tags_to_details(details, tagdetails):
                 result[taglist][tagdetails[tag]['cat']] = tagdetails[tag]['name']
     return result
 
+
 def assemble_details(filename='serverlist.yaml'):
-    "Grab the vm details from the file, get the tags, put them together"
+    """Grab the vm details from the file, get the tags, put them together"""
     details = read_dicts_from_file(filename)
     tagdetails = get_tag_details(get_unique_tags(details), connect_cis())
     return inject_tags_to_details(details, tagdetails)
 
+
 def get_names(filename='servers.list'):
-    "Get the list of server names"
+    """Get the list of server names"""
     with open(filename, 'r') as listfile:
         names = listfile.readlines()
     names = [x.strip() for x in names]
     return names
 
+
 def main():
-    "This is what I'm doing during dev"
-    #get_details(get_names('servers.list'), 'serverlist.yaml')
-    #print assemble_details('serverlist.yaml')
+    """This is what I'm doing during dev"""
+    # get_details(get_names('servers.list'), 'serverlist.yaml')
+    # print assemble_details('serverlist.yaml')
     get_details(get_names('serverstmp.list'), 'serverlisttmp.yaml')
     print assemble_details('serverlisttmp.yaml')
+
 
 main()

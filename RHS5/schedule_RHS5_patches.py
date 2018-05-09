@@ -131,4 +131,5 @@ def patch_groups():
     client.auth.logout(key)
 
 
-patch_groups()
+if __name__ == "__main__":
+    patch_groups()

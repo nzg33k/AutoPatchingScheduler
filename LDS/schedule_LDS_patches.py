@@ -100,4 +100,5 @@ def process_list(listfile=conf.LISTFILE):
                 reboot_by_tag(row[0], rebootschedule)
 
 
-process_list()
+if __name__ == "__main__":
+    process_list()

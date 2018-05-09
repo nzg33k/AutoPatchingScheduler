@@ -182,4 +182,5 @@ def main():
     print assemble_details('serverlisttmp.yaml')
 
 
-main()
+if __name__ == "__main__":
+    main()

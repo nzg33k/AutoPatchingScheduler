@@ -95,7 +95,7 @@ def process_list(listfile=conf.LISTFILE):
         for row in filereader:
             if get_computers_by_tag(row[0]):
                 schedule = interpret_time(row)
-                rebootschedule = schedule + relativedelta.relativedelta(hours=2)
+                rebootschedule = schedule + relativedelta.relativedelta(hours=conf.LDS_REBOOT_DELAY)
                 upgrade_by_tag(row[0], schedule)
                 reboot_by_tag(row[0], rebootschedule)
 

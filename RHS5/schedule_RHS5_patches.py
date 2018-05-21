@@ -28,6 +28,9 @@ import datetime
 import random
 import string
 import re
+import csv
+import configuration as conf
+
 
 
 def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
@@ -131,5 +134,55 @@ def patch_groups():
     client.auth.logout(key)
 
 
+def interpret_time(list_item, startdate=conf.STARTDATE):
+    """Take the data we get from the CSV and turn it into a real date"""
+    weekday = int(list_item[1])
+    weeknumber = int(list_item[2])
+    time = re.split(":", list_item[3])
+    hours = int(time[0])
+    minutes = int(time[1])
+    if not startdate:
+        startdate = datetime.datetime.now()
+    # We always schedule at the end of the month, so lets reset to the start of next
+    startdate = startdate.replace(day=1)
+    # If it's December then next month is January next year not month 13 of this year
+    if startdate.month == 12:
+        startdate = startdate.replace(month=1)
+        startdate = startdate.replace(year=(startdate.year + 1))
+    else:
+        startdate = startdate.replace(month=(startdate.month + 1))
+    # Now we have a start date of the start of the month after that in startdate (normally today)
+    # The +1 makes this match up with linux times (day 1 = Monday)
+    daysahead = weekday - (startdate.weekday() + 1)
+    if daysahead < 0:
+        # Target day already happened this week
+        daysahead += 7
+    # Add 7 days for each Week Of Month we want - but 'This' week is week 1
+    daysahead += 7 * (weeknumber - 1)
+    schedule = startdate + datetime.timedelta(daysahead)
+    # If the time is over 24 hours then we mean hours-24 the next day
+    if hours > 23:
+        hours -= 24
+        schedule = schedule + datetime.timedelta(days=1)
+    schedule = schedule.replace(hour=hours).replace(minute=minutes)
+    return schedule
+
+
+def process_list(listfile=conf.LISTFILE):
+    """Process the list of tags and schedules"""
+    import configuration as conf
+    client = xmlrpclib.Server(conf.SATELLITE_URL, verbose=0)
+    key = client.auth.login(conf.SATELLITE_LOGIN, conf.SATELLITE_PASSWORD)
+    with open(listfile) as csvfile:
+        filereader = csv.reader(csvfile)
+        for row in filereader:
+            schedule = interpret_time(row)
+            systems = client.systemgroup.listSystemsMinimal(key, row[0])
+            for system in systems:
+                tag_group_system(client, key, system['id'])
+                schedule_pending_errata(client, key, system['id'], schedule, row[4])
+            client.auth.logout(key)
+
+
 if __name__ == "__main__":
-    patch_groups()
+    process_list()

@@ -129,11 +129,15 @@ def process_list(listfile=None):
         filereader = csv.reader(csvfile)
         for row in filereader:
             schedule = interpret_time(row)
-            systems = client.systemgroup.listSystemsMinimal(key, row[0])
-            for system in systems:
-                tag_group_system(client, key, system['id'])
-                schedule_pending_errata(client, key, system['id'], schedule, row[4])
-            client.auth.logout(key)
+            try:
+                systems = client.systemgroup.listSystemsMinimal(key, row[0])
+            except xmlrpclib.Fault:
+                systems = None
+            else:
+                for system in systems:
+                    tag_group_system(client, key, system['id'])
+                    schedule_pending_errata(client, key, system['id'], schedule, row[4])
+    client.auth.logout(key)
 
 
 if __name__ == "__main__":

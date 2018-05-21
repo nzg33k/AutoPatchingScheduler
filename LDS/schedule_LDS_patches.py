@@ -28,8 +28,12 @@ import configuration as conf
 
 def get_computers_by_tag(tag):
     """Get the computers with a specific tag"""
+    import landscape_api.base.errors as ldserrors
     api = LANDSCAPE_API(conf.LDS_URI, conf.LDS_KEY, conf.LDS_SECRET, conf.LDS_CA)
-    computers = api.get_computers(query="tag:" + tag)  # pylint: disable=no-member
+    try:
+        computers = api.get_computers(query="tag:" + tag)  # pylint: disable=no-member
+    except ldserrors.InvalidQueryError:
+        computers = None
     return computers
 
 

@@ -176,11 +176,11 @@ def get_names(filename='vmtagservers.list'):
     return names
 
 
-def main(debugoutput=False):
+def get_vmtag_data(debugoutput=False):
     """This is what I'm doing during dev"""
-    get_details(get_names('vmtagservers.list'), 'serverlisttmp.yaml')
+    get_details(get_names('vmtagservers.list'), 'serverlisttmp.yaml', debugoutput)
     return assemble_details('serverlisttmp.yaml')
 
 
 if __name__ == "__main__":
-    print main(True)
+    print get_vmtag_data(True)

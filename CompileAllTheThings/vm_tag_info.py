@@ -168,7 +168,7 @@ def assemble_details(filename='serverlist.yaml'):
     return inject_tags_to_details(details, tagdetails)
 
 
-def get_names(filename='servers.list'):
+def get_names(filename='vmtagservers.list'):
     """Get the list of server names"""
     with open(filename, 'r') as listfile:
         names = listfile.readlines()
@@ -178,9 +178,7 @@ def get_names(filename='servers.list'):
 
 def main(debugoutput=False):
     """This is what I'm doing during dev"""
-    # get_details(get_names('servers.list'), 'serverlist.yaml')
-    # print assemble_details('serverlist.yaml')
-    get_details(get_names('serverstmp.list'), 'serverlisttmp.yaml')
+    get_details(get_names('vmtagservers.list'), 'serverlisttmp.yaml')
     return assemble_details('serverlisttmp.yaml')
 
 

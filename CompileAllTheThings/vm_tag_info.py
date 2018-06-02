@@ -40,11 +40,11 @@ def connect_cis():
     import configuration as config
     import requests
     import urllib3
+    from com.vmware.cis_client import Session
     from vmware.vapi.security.user_password import create_user_password_security_context
     from vmware.vapi.stdlib.client.factories import StubConfigurationFactory
     from vmware.vapi.lib.connect import get_requests_connector
     from vmware.vapi.security.session import create_session_security_context
-    from com.vmware.cis_client import Session
     # Create a session object in the client.
     session = requests.Session()
     # We don't have valid certificates so...
@@ -75,7 +75,7 @@ def connect_cis():
     return my_stub_config
 
 
-def get_details(allnames, filename='serverlist.yaml'):
+def get_details(allnames, filename='serverlist.yaml', debugoutput=True):
     """Get the details"""
     import sys
     from com.vmware.vcenter_client import VM
@@ -87,11 +87,13 @@ def get_details(allnames, filename='serverlist.yaml'):
     for names in names_chunks:
         names = set(names)
         vms = vsphere_client.vcenter.VM.list(VM.FilterSpec(names=names))
-        sys.stdout.write('-')
-        sys.stdout.flush()
-        for vmserver in vms:
-            sys.stdout.write('.')
+        if debugoutput:
+            sys.stdout.write('-')
             sys.stdout.flush()
+        for vmserver in vms:
+            if debugoutput:
+                sys.stdout.write('.')
+                sys.stdout.flush()
             result = {}
             taglist = TagAssociation(connect_cis())
             taglist = taglist.list_attached_tags(
@@ -174,13 +176,13 @@ def get_names(filename='servers.list'):
     return names
 
 
-def main():
+def main(debugoutput=False):
     """This is what I'm doing during dev"""
     # get_details(get_names('servers.list'), 'serverlist.yaml')
     # print assemble_details('serverlist.yaml')
     get_details(get_names('serverstmp.list'), 'serverlisttmp.yaml')
-    print assemble_details('serverlisttmp.yaml')
+    return assemble_details('serverlisttmp.yaml')
 
 
 if __name__ == "__main__":
-    main()
+    print main(True)

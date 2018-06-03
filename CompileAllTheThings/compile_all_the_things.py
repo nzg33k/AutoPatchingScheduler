@@ -92,6 +92,13 @@ def get_googlesheet_computer_names():
     return computernames
 
 
+def get_vm_tags():
+    """Get the tags for VMs from VMWare"""
+    import vm_tag_info
+    taginfo = vm_tag_info.assemble_details()
+    return taginfo
+
+
 def output_to_gsheet(data):
     """Output data to a google sheet"""
     # https://developers.google.com/sheets/api/quickstart/python
@@ -131,24 +138,29 @@ def output_to_gsheet(data):
     result.execute()
 
 
-def output_to_csv(data):
+def output_to_csv(data, filename=conf.OUTPUTCSV):
     """Output data to a csv"""
     import csv
-    with open(conf.OUTPUTCSV, 'wb') as csvfile:
+    with open(filename, 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerows(data)
 
 
 def get_computer_names():
     """Get the names of the computers"""
-    names = get_lds_computer_names()
-    names += get_rhs5_computer_names()
-    names += get_web_computer_names()
+    names = get_web_computer_names()
     names += get_googlesheet_computer_names()
+    #Todo: Uncomment the next two lines
+    #names += get_lds_computer_names()
+    #names += get_rhs5_computer_names()
     names = sorted(names, key=lambda tmp: tmp[0])
     # One line per host, space separate sources
     for index, name in enumerate(names):
+        #After the first one...
         if index > 0:
+            #If this one and the previous one are the same
+            #Add all the last ones details to this
+            #We will delete the previous one soon
             if names[index - 1][0] == name[0]:
                 names[index][1] += " " + names[index - 1][1]
                 if names[index][2] != "":
@@ -161,7 +173,44 @@ def get_computer_names():
     return list(names)
 
 
-# output_to_gsheet(get_computer_names())
-OUTPUT = get_computer_names()
-output_to_gsheet(OUTPUT)
-output_to_csv(OUTPUT)
+def compiledata(useheader=False):
+    """Put it all together"""
+    headerrow = ['Server Name', 'Source', 'Window'] + conf.VMTAGLIST
+    results = list()
+    if useheader:
+        results.append(headerrow)
+    vmtags = get_vm_tags()
+    computerdata = get_computer_names()
+    for computer in computerdata:
+        #vmware uses the short hostname
+        shortname = computer[0].split('.')[0]
+        if shortname in vmtags:
+            for tagname in conf.VMTAGLIST:
+                if tagname in vmtags[shortname]:
+                    computer.append(vmtags[shortname][tagname])
+                else:
+                    computer.append("")
+        else:
+            for tagname in conf.VMTAGLIST:
+                computer.append("")
+        results.append(computer)
+    return results
+
+def output_to_listfile(data, filename):
+    """Output to a list file"""
+    listfile = open(filename, 'w')
+    for line in data:
+        listfile.write(line.split('.')[0] + "\n")
+
+def outputdata():
+    """Send the data to the relevant places"""
+    output = compiledata(conf.HEADERINOUTPUT)
+    output_to_gsheet(output)
+    output_to_csv(output)
+    result = set()
+    for line in output:
+        result.add(line[0])
+    output_to_listfile(result, conf.VMLISTFILE)
+
+if __name__ == "__main__":
+    outputdata()

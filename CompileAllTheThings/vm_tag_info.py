@@ -3,6 +3,8 @@ More VMWare play
 """
 
 
+import configuration as conf
+
 # Require pyyaml and the Vsphere sdk
 def chunks(mylist, max_length):
     """Break mylist into pieces no bigger than max_length"""
@@ -15,7 +17,7 @@ def chunks(mylist, max_length):
     return result
 
 
-def connect_vsphere():
+def connect_vsphere(hostname=conf.VM_HOSTNAME):
     """Connect to Vsphere"""
     import configuration as config
     import requests
@@ -27,7 +29,7 @@ def connect_vsphere():
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     session.verify = False
     vsphere_client = create_vsphere_client(
-        server=config.VM_HOSTNAME,
+        server=hostname,
         username=config.VM_USERNAME,
         password=config.VM_PASSWORD,
         session=session
@@ -35,7 +37,7 @@ def connect_vsphere():
     return vsphere_client
 
 
-def connect_cis():
+def connect_cis(vchostname):
     """Connect to CIS"""
     import configuration as config
     import requests
@@ -53,7 +55,7 @@ def connect_cis():
     # Create a connection for the session.
     connector = get_requests_connector(
         session=session,
-        url='https://' + config.VM_HOSTNAME + '/api'
+        url='https://' + vchostname + '/api'
     )
     # Add username/password security context to the connector.
     connector.set_security_context(
@@ -75,13 +77,13 @@ def connect_cis():
     return my_stub_config
 
 
-def get_details(allnames, filename='serverlist.yaml', debugoutput=True):
+def get_details(allnames, filename, vchostname=conf.VM_HOSTNAME, debugoutput=True):
     """Get the details"""
     import sys
     from com.vmware.vcenter_client import VM
     from com.vmware.cis.tagging_client import TagAssociation
     from com.vmware.vapi import std_client
-    vsphere_client = connect_vsphere()
+    vsphere_client = connect_vsphere(vchostname)
     names_chunks = chunks(allnames, 100)
     results = []
     for names in names_chunks:
@@ -95,13 +97,12 @@ def get_details(allnames, filename='serverlist.yaml', debugoutput=True):
                 sys.stdout.write('.')
                 sys.stdout.flush()
             result = {}
-            taglist = TagAssociation(connect_cis())
+            taglist = TagAssociation(connect_cis(vchostname))
             taglist = taglist.list_attached_tags(
                 std_client.DynamicID(type="VirtualMachine", id=vmserver.vm)
             )
-            name = names.pop()
-            result[name] = {}
-            result[name] = taglist
+            result[vmserver.name] = {}
+            result[vmserver.name] = taglist
             write_dict_to_file(result, filename)
             results.append(result)
     return results
@@ -136,7 +137,7 @@ def get_unique_tags(results):
     return unique_tags
 
 
-def get_tag_details(unique_tags, connectcis=connect_cis()):
+def get_tag_details(unique_tags, connectcis):
     """Get the details for each unique tag"""
     from com.vmware.cis.tagging_client import Tag, Category
     result = {}
@@ -161,14 +162,15 @@ def inject_tags_to_details(details, tagdetails):
     return result
 
 
-def assemble_details(filename='serverlist.yaml'):
+def assemble_details(vchostname, filename=conf.VMTAGDETAILSFILE, details = None):
     """Grab the vm details from the file, get the tags, put them together"""
-    details = read_dicts_from_file(filename)
-    tagdetails = get_tag_details(get_unique_tags(details), connect_cis())
+    if not details:
+        details = read_dicts_from_file(filename)
+    tagdetails = get_tag_details(get_unique_tags(details), connect_cis(vchostname))
     return inject_tags_to_details(details, tagdetails)
 
 
-def get_names(filename='vmtagservers.list'):
+def get_names(filename=conf.VMLISTFILE):
     """Get the list of server names"""
     with open(filename, 'r') as listfile:
         names = listfile.readlines()
@@ -176,11 +178,17 @@ def get_names(filename='vmtagservers.list'):
     return names
 
 
-def get_vmtag_data(debugoutput=False):
+def get_vmtag_data(debugoutput=False, nameslist=get_names(conf.VMLISTFILE)):
     """This is what I'm doing during dev"""
-    get_details(get_names('vmtagservers.list'), 'serverlisttmp.yaml', debugoutput)
-    return assemble_details('serverlisttmp.yaml')
+    if isinstance(conf.VM_HOSTNAME, list):
+        for vchostname in conf.VM_HOSTNAME:
+            get_details(nameslist, conf.VMTAGDETAILSFILE, vchostname, debugoutput)
+            returnvalue = assemble_details(vchostname, conf.VMTAGDETAILSFILE)
+    else:
+        get_details(nameslist, conf.VMTAGDETAILSFILE, conf.VM_HOSTNAME, debugoutput)
+        returnvalue = assemble_details(conf.VM_HOSTNAME, conf.VMTAGDETAILSFILE)
+    return returnvalue
 
 
 if __name__ == "__main__":
-    print get_vmtag_data(True)
+    print get_vmtag_data(False)

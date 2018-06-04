@@ -94,8 +94,9 @@ def get_googlesheet_computer_names():
 
 def get_vm_tags():
     """Get the tags for VMs from VMWare"""
-    import vm_tag_info
-    taginfo = vm_tag_info.assemble_details()
+    import pickle
+    with open(conf.VMTAGDETAILSFILE, 'rb') as datafile:
+        taginfo = pickle.load(datafile)
     return taginfo
 
 

@@ -77,7 +77,7 @@ def connect_cis(vchostname):
     return my_stub_config
 
 
-def get_details(allnames, filename, vchostname=conf.VM_HOSTNAME, debugoutput=True):
+def get_details(allnames, vchostname=conf.VM_HOSTNAME, debugoutput=True):
     """Get the details"""
     import sys
     from com.vmware.vcenter_client import VM
@@ -86,15 +86,19 @@ def get_details(allnames, filename, vchostname=conf.VM_HOSTNAME, debugoutput=Tru
     vsphere_client = connect_vsphere(vchostname)
     names_chunks = chunks(allnames, 100)
     results = []
+    if debugoutput:
+        sys.stdout.write('\nStarting ' + vchostname)
+        sys.stdout.flush()
     for names in names_chunks:
         names = set(names)
         vms = vsphere_client.vcenter.VM.list(VM.FilterSpec(names=names))
-        if debugoutput:
-            sys.stdout.write('-')
-            sys.stdout.flush()
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+        vmcount = 0
         for vmserver in vms:
+            vmcount = vmcount + 1
             if debugoutput:
-                sys.stdout.write('.')
+                sys.stdout.write('This chunk has processed ' + str(vmcount) + 'VMs\r')
                 sys.stdout.flush()
             result = {}
             taglist = TagAssociation(connect_cis(vchostname))
@@ -103,8 +107,10 @@ def get_details(allnames, filename, vchostname=conf.VM_HOSTNAME, debugoutput=Tru
             )
             result[vmserver.name] = {}
             result[vmserver.name] = taglist
-            write_dict_to_file(result, filename)
             results.append(result)
+    if debugoutput:
+        sys.stdout.write('\nDone with this VC\n')
+        sys.stdout.flush()
     return results
 
 
@@ -137,11 +143,18 @@ def get_unique_tags(results):
     return unique_tags
 
 
-def get_tag_details(unique_tags, connectcis):
+def get_tag_details(unique_tags, connectcis, debugoutput = False):
     """Get the details for each unique tag"""
+    import sys
     from com.vmware.cis.tagging_client import Tag, Category
     result = {}
+    if debugoutput:
+        sys.stdout.write('\nLooking up tags now - t for tag\n')
+        sys.stdout.flush()
     for tagid in unique_tags:
+        if debugoutput:
+            sys.stdout.write('t')
+            sys.stdout.flush()
         result[tagid] = {}
         tagdetails = Tag(connectcis).get(tagid)
         catname = Category(connectcis).get(tagdetails.category_id).name
@@ -162,11 +175,11 @@ def inject_tags_to_details(details, tagdetails):
     return result
 
 
-def assemble_details(vchostname, filename=conf.VMTAGDETAILSFILE, details = None):
+def assemble_details(vchostname, filename=conf.VMTAGDETAILSFILE, details = None, debugoutput=False):
     """Grab the vm details from the file, get the tags, put them together"""
     if not details:
         details = read_dicts_from_file(filename)
-    tagdetails = get_tag_details(get_unique_tags(details), connect_cis(vchostname))
+    tagdetails = get_tag_details(get_unique_tags(details), connect_cis(vchostname), debugoutput)
     return inject_tags_to_details(details, tagdetails)
 
 
@@ -180,15 +193,19 @@ def get_names(filename=conf.VMLISTFILE):
 
 def get_vmtag_data(debugoutput=False, nameslist=get_names(conf.VMLISTFILE)):
     """This is what I'm doing during dev"""
+    import pickle
+    details = []
     if isinstance(conf.VM_HOSTNAME, list):
         for vchostname in conf.VM_HOSTNAME:
-            get_details(nameslist, conf.VMTAGDETAILSFILE, vchostname, debugoutput)
-            returnvalue = assemble_details(vchostname, conf.VMTAGDETAILSFILE)
+            details += get_details(nameslist, vchostname, debugoutput)
+            returnvalue = assemble_details(vchostname, conf.VMTAGDETAILSFILE, details, debugoutput)
     else:
-        get_details(nameslist, conf.VMTAGDETAILSFILE, conf.VM_HOSTNAME, debugoutput)
-        returnvalue = assemble_details(conf.VM_HOSTNAME, conf.VMTAGDETAILSFILE)
+        details += get_details(nameslist, conf.VM_HOSTNAME, debugoutput)
+        returnvalue = assemble_details(conf.VM_HOSTNAME, conf.VMTAGDETAILSFILE, detailsi, debugoutput)
+    with open(conf.VMTAGDETAILSFILE, 'wb') as datafile:
+        pickle.dump(returnvalue, datafile)
     return returnvalue
 
 
 if __name__ == "__main__":
-    print get_vmtag_data(False)
+    print get_vmtag_data(True)

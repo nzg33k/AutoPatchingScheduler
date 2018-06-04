@@ -98,7 +98,10 @@ def get_details(allnames, vchostname=conf.VM_HOSTNAME, debugoutput=True):
         for vmserver in vms:
             vmcount = vmcount + 1
             if debugoutput:
-                sys.stdout.write('This chunk has processed ' + str(vmcount) + 'VMs\r')
+                if vmcount == 1:
+                    sys.stdout.write('This chunk has processed ' + str(vmcount) + 'VM\r')
+                else:
+                    sys.stdout.write('This chunk has processed ' + str(vmcount) + 'VMs\r')
                 sys.stdout.flush()
             result = {}
             taglist = TagAssociation(connect_cis(vchostname))

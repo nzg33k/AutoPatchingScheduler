@@ -95,8 +95,11 @@ def get_googlesheet_computer_names():
 def get_vm_tags():
     """Get the tags for VMs from VMWare"""
     import pickle
-    with open(conf.VMTAGDETAILSFILE, 'rb') as datafile:
-        taginfo = pickle.load(datafile)
+    from os import path
+    taginfo = []
+    if path.isfile(conf.VMTAGDETAILSFILE):
+        with open(conf.VMTAGDETAILSFILE, 'rb') as datafile:
+            taginfo = pickle.load(datafile)
     return taginfo
 
 
@@ -151,9 +154,8 @@ def get_computer_names():
     """Get the names of the computers"""
     names = get_web_computer_names()
     names += get_googlesheet_computer_names()
-    #Todo: Uncomment the next two lines
-    #names += get_lds_computer_names()
-    #names += get_rhs5_computer_names()
+    names += get_lds_computer_names()
+    names += get_rhs5_computer_names()
     names = sorted(names, key=lambda tmp: tmp[0])
     # One line per host, space separate sources
     for index, name in enumerate(names):

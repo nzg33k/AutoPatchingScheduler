@@ -244,4 +244,4 @@ def get_vmtag_data(debugoutput=False, nameslist=get_names(conf.VMLISTFILE)):
 
 
 if __name__ == "__main__":
-    print get_vmtag_data('True')
+    print get_vmtag_data(True)

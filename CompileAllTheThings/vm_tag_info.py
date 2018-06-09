@@ -44,7 +44,7 @@ def connect_vsphere(hostname=conf.VM_HOSTNAME, debugoutput=False):
             if debugoutput:
                 print('\n' + hostname + ' won\'t talk to me :(\n')
             time.sleep(5)
-        return vsphere_client
+    return vsphere_client
 
 
 def connect_cis(vchostname, debugoutput=False):

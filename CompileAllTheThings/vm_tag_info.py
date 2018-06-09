@@ -143,7 +143,9 @@ def get_details(allnames, vchostname=conf.VM_HOSTNAME, debugoutput=False):
     vmcount = 0
     vmchunks = get_vms_in_vc(allnames, vchostname, debugoutput)
     for vms in vmchunks:
+        vmChunkProgress = 0
         for vmserver in vms:
+            vmChunkProgress += 1
             vmcount += 1
             result = {}
             taglist = TagAssociation(connect_cis(vchostname, debugoutput))
@@ -155,9 +157,9 @@ def get_details(allnames, vchostname=conf.VM_HOSTNAME, debugoutput=False):
             results.append(result)
             if debugoutput:
                 if vmcount == 1:
-                    sys.stdout.write('\rThis chunk has processed ' + str(vmcount) + 'VM')
+                    sys.stdout.write('\rThis chunk has processed ' + str(vmChunkProgress) + 'VM')
                 else:
-                    sys.stdout.write('\rThis chunk has processed ' + str(vmcount) + 'VMs')
+                    sys.stdout.write('\rThis chunk has processed ' + str(vmChunkProgress) + 'VMs')
                 sys.stdout.flush()
     if debugoutput:
         sys.stdout.write('\nDone looking up VMs on this VC')

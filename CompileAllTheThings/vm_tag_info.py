@@ -92,7 +92,7 @@ def connect_cis(vchostname, debugoutput=False):
         except:
             connected = False
             if debugoutput:
-                print('\n' + hostname + ' won\'t talk to me :(\n')
+                print('\n' + vchostname + ' won\'t talk to me :(\n')
             time.sleep(5)
     return my_stub_config
 

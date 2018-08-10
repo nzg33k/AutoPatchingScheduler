@@ -120,6 +120,7 @@ def process_list(listfile=None):
     """Process the list of tags and schedules"""
     import csv
     import xmlrpclib
+    import datetime
     import configuration as conf
     if not listfile:
         listfile = conf.LISTFILE

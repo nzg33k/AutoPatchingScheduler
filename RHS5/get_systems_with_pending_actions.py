@@ -45,9 +45,10 @@ def find_sys_with_pending_actions(show_progress=True, show_time=True):
                 system_list.add(system['server_id'])
                 if show_progress:
                     systems_processed += 1
-                    sys.stdout.write('\r' + str(systems_processed))
+                    sys.stdout.write('\rSystem actions processed: ' + str(systems_processed))
 
     if show_time:
+        sys.stdout.write('\n')
         print "Finished at: " + str(datetime.datetime.now())
     print "Unique systems with actions pending: " + str(len(system_list))
 

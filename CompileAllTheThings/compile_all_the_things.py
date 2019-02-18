@@ -88,7 +88,8 @@ def get_googlesheet_computer_names():
         values = result.get('values', [])
         if values:
             for row in values:
-                computernames.append([row[0].encode("utf-8").rstrip().lower(), gsheet['name'], ""])
+                if len(row) > 0:
+                    computernames.append([row[0].encode("utf-8").rstrip().lower(), gsheet['name'], ""])
     return computernames
 
 
